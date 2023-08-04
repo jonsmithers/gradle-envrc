@@ -1,0 +1,9 @@
+plugins {
+    id("dev.smithers.envrc")
+    id 'nu.studer.credentials' version '3.0'
+}
+
+credentials.toString()
+println("envrc val ${envrc["sdf"]}")
+println("envrc val ${envrc.sdf}")
+println("envrc val ${envrc.x}")

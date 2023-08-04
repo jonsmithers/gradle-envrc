@@ -1,0 +1,4 @@
+pluginManagement {
+    includeBuild("../envrc-plugin")
+}
+
