@@ -8,8 +8,12 @@ repositories {
     mavenCentral()
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 group = "dev.smithers"
-version = "0.0.0"
+version = "0.0.1"
 
 gradlePlugin {
     plugins {
