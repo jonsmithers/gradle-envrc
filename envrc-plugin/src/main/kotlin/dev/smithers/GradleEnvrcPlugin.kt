@@ -32,6 +32,9 @@ private class EnvrcFile {
     fun extract(variableName: String): String? {
         val dollar = "\$"
         val script = """
+                if command -v direnv > /dev/null; then
+                    eval "$(direnv stdlib)"
+                fi
                 source .envrc &> /dev/null
                 if [[ -z "${dollar}{${variableName}+z}" ]]; then
                     echo -n $SPECIAL_NULL_VALUE
