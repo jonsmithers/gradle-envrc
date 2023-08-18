@@ -4,10 +4,11 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 // 👇 this value can be imported by users in kotlin scripts
-val envrc = ScriptApi()
+lateinit var envrc: ScriptApi;
 
 class GradleEnvrcPlugin : org.gradle.api.Plugin<org.gradle.api.Project> {
     override fun apply(project: org.gradle.api.Project) {
+        envrc = ScriptApi();
         // 👇 this value can be referenced by users in groovy scripts
         project.extensions.extraProperties["envrc"] = envrc
     }
