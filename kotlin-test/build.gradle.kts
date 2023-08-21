@@ -4,6 +4,5 @@ plugins {
      id("dev.smithers.envrc")
 }
 
-println("kotlin envrc val ${envrc["sdf"]}")
-println("kotlin envrc val ${envrc.get("sdf")}")
-println("kotlin envrc val ${envrc["none"]}")
+println("kotlin envrc val A=${envrc["A"]}")
+println("kotlin envrc val HI=${envrc["HI"]}")

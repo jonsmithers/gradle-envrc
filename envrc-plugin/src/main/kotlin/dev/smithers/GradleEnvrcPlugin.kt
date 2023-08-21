@@ -2,6 +2,8 @@ package dev.smithers
 
 import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.bufferedReader
+import kotlin.io.path.deleteExisting
 
 // 👇 this value can be imported by users in kotlin scripts
 lateinit var envrc: ScriptApi;
@@ -23,6 +25,7 @@ class ScriptApi {
 
 private class EnvrcFile {
     private var _envrcFile: File? = null
+    private var hasPrintedEnvrcOut = false
 
     private fun envrc(): File {
         val result = _envrcFile ?: findEnvrc()!!
@@ -31,12 +34,17 @@ private class EnvrcFile {
     }
 
     fun extract(variableName: String): String? {
+        var envrcOut = kotlin.io.path.createTempFile(prefix = "gradle-envrc-out")
         val dollar = "\$"
         val script = """
                 if command -v direnv > /dev/null; then
+                    if ! direnv status | grep --quiet 'RC allowed true'; then
+                        echo -n $SPECIAL_BLOCKED_VALUE
+                        exit
+                    fi
                     eval "$(direnv stdlib)"
                 fi
-                source .envrc &> /dev/null
+                source .envrc &> $envrcOut
                 if [[ -z "${dollar}{${variableName}+z}" ]]; then
                     echo -n $SPECIAL_NULL_VALUE
                 else
@@ -50,7 +58,15 @@ private class EnvrcFile {
             .redirectError(ProcessBuilder.Redirect.PIPE)
             .start()
         process.waitFor(60, TimeUnit.SECONDS)
+        if (!hasPrintedEnvrcOut) {
+            println(envrcOut.bufferedReader().readLines().joinToString("\n") { line -> "source .envrc | $line" })
+            hasPrintedEnvrcOut = true
+        }
+        envrcOut.deleteExisting()
         val result = process.inputStream.bufferedReader().readText()
+        if (result == SPECIAL_BLOCKED_VALUE) {
+            throw java.lang.IllegalStateException(".envrc is blocked. Run \"direnv allow\".")
+        }
         if (result == SPECIAL_NULL_VALUE) {
             return null
         }
@@ -74,3 +90,4 @@ private fun findEnvrc(dir: File = File(System.getProperty("user.dir"))): File? {
 }
 
 private const val SPECIAL_NULL_VALUE = "special-null-value"
+private const val SPECIAL_BLOCKED_VALUE = "special-blocked-value"

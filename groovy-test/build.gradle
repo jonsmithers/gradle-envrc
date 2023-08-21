@@ -6,4 +6,5 @@ plugins {
 credentials.toString()
 println("envrc val ${envrc["sdf"]}")
 println("envrc val ${envrc.sdf}")
-println("envrc val ${envrc.x}")
+println("envrc val A=${envrc.A}")
+println("envrc val HI=${envrc.HI}")
