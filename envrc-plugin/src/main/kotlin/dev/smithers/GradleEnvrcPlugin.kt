@@ -6,11 +6,11 @@ import kotlin.io.path.bufferedReader
 import kotlin.io.path.deleteExisting
 
 // 👇 this value can be imported by users in kotlin scripts
-lateinit var envrc: ScriptApi;
+lateinit var envrc: ScriptApi
 
 class GradleEnvrcPlugin : org.gradle.api.Plugin<org.gradle.api.Project> {
     override fun apply(project: org.gradle.api.Project) {
-        envrc = ScriptApi();
+        envrc = ScriptApi()
         // 👇 this value can be referenced by users in groovy scripts
         project.extensions.extraProperties["envrc"] = envrc
     }
@@ -24,17 +24,13 @@ class ScriptApi {
 }
 
 private class EnvrcFile {
-    private var _envrcFile: File? = null
+    private val envrc: File? by lazy { findEnvrc() }
     private var hasPrintedEnvrcOut = false
 
-    private fun envrc(): File {
-        val result = _envrcFile ?: findEnvrc()!!
-        _envrcFile = result
-        return result
-    }
-
     fun extract(variableName: String): String? {
-        var envrcOut = kotlin.io.path.createTempFile(prefix = "gradle-envrc-out")
+        val envrc = envrc ?: return null
+
+        val envrcOut = kotlin.io.path.createTempFile(prefix = "gradle-envrc-out")
         val dollar = "\$"
         val script = """
                 if command -v direnv > /dev/null; then
@@ -53,7 +49,7 @@ private class EnvrcFile {
                 """
         val process = ProcessBuilder()
             .command("bash", "-c", script)
-            .directory(envrc().parentFile)
+            .directory(envrc.parentFile)
             .redirectOutput(ProcessBuilder.Redirect.PIPE)
             .redirectError(ProcessBuilder.Redirect.PIPE)
             .start()
@@ -84,9 +80,10 @@ private fun findEnvrc(dir: File = File(System.getProperty("user.dir"))): File? {
         return envrc
     }
     if (dir.absolutePath == "/") {
-        throw IllegalStateException("Unable to find .envrc")
+        println("No .envrc found")
+        return null
     }
-    return findEnvrc((dir.absoluteFile.parentFile))
+    return findEnvrc(dir.absoluteFile.parentFile)
 }
 
 private const val SPECIAL_NULL_VALUE = "special-null-value"
