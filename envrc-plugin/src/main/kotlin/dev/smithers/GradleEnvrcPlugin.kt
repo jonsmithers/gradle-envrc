@@ -34,7 +34,7 @@ private class EnvrcFile {
         val dollar = "\$"
         val script = """
                 if command -v direnv > /dev/null; then
-                    if ! direnv status | grep --quiet 'RC allowed true'; then
+                    if ! direnv status | grep --quiet 'RC allowed true\|RC allowed 0'; then
                         echo -n $SPECIAL_BLOCKED_VALUE
                         exit
                     fi
